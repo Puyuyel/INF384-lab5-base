@@ -1,0 +1,18 @@
+# Propuesta para acordar y registrar en A2 / Decisión 1.
+# Escanear todos los checks Terraform: informar NO significa omitir.
+directory:
+  - infra
+framework:
+  - terraform
+skip-download: true
+compact: true
+# Los hallazgos no enumerados informan sin bloquear.
+# Los IDs de hard-fail-on tienen prioridad sobre soft-fail.
+soft-fail: true
+hard-fail-on:
+  - CKV_AWS_53
+  - CKV_AWS_54
+  - CKV_AWS_55
+  - CKV_AWS_56
+  - CKV_AWS_70
+  - CKV2_AWS_6
