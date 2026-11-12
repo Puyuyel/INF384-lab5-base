@@ -32,3 +32,28 @@ jobs:
         run: python -m pip install checkov==3.4.5
       - name: Revisar Terraform y aplicar la política IaC
         run: checkov --config-file .checkov.yaml
+
+  sca:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Bloquea: HIGH y CRITICAL con version corregida (Decision 1 y 2)
+      - name: Trivy (bloquea)
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: package-lock.json
+          scanners: vuln
+          severity: HIGH,CRITICAL
+          ignore-unfixed: true
+          exit-code: '1'
+      # Informa: todo lo demas
+      - name: Trivy (informa el resto)
+        if: always()
+        uses: aquasecurity/trivy-action@v0.36.0
+        with:
+          scan-type: fs
+          scan-ref: package-lock.json
+          scanners: vuln
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          exit-code: '0'
