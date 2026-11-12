@@ -103,8 +103,6 @@ No funcionó:
 - Alternativa descartada y por qué: La excepción, porque el fallo sí se podía explotar en nuestro código. Bloquear tampoco sirve, porque el fix podría no salir nunca.
 - Posición en minoría: El abogado del diablo propuso una excepción corta para no tocar código justo después del incidente. Se descartó porque el cambio es pequeño y tiene pruebas.
 
-- Claude Code: identificar las dependencias vulnerables, implementar el reemplazo de `ip` con sus pruebas y redactar la Decisión 2. El equipo lo revisó.
-
 ### Decisión 3 · La Function URL sin autenticación
 
 - Decisión:
