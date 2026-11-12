@@ -120,9 +120,9 @@ No funcionó:
 
 | Evidencia | Link |
 |---|---|
-| Run fallido: el gate detiene el bucket público | |
-| Run en verde en `main` después de las correcciones | |
-| Pull requests del equipo | |
+| Run fallido: el gate detiene el bucket público | https://github.com/Puyuyel/INF384-lab5-base/actions/runs/43313942228 |
+| Run en verde en `main` después de las correcciones | https://github.com/Puyuyel/INF384-lab5-base/actions/runs/43317875556 |
+| Pull requests del equipo | https://github.com/Puyuyel/INF384-lab5-base/pulls?q=is%3Apr (#1 a #5) |
 
 ## Declaración de uso de IA
 
