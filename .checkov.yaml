@@ -16,3 +16,4 @@ hard-fail-on:
   - CKV_AWS_56
   - CKV_AWS_70
   - CKV2_AWS_6
+  - CKV_AWS_258
