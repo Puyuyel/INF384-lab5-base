@@ -73,7 +73,7 @@ No funcionó:
 | Activaremos branch protection en `main`: pull request obligatorio y una aprobación. | Líder técnico | 2026-11-13 |
 | Incorporaremos los jobs `iac` (Checkov) y `sca` (Trivy) al pipeline y los marcaremos como checks requeridos. | Desarrolladores backend | 2026-11-12 |
 | Corregiremos el bucket en Terraform y le daremos acceso solo al rol `conciliacion-lectura` de la cuenta 111122223333. | Desarrolladores backend | 2026-11-12 |
-| Restableceremos el acceso del proveedor con la política restringida, tras el merge. | On-call | 2026-11-13 |
+| Restableceremos el acceso del proveedor con la política restringida, tras el merge. | On-call | 2026-11-12 |
 | Activaremos registros de acceso al bucket y una alerta de cambios de configuración. | Ingeniera de plataforma | 2026-11-20 |
 | Moveremos `terraform apply` a un pipeline con aprobación y sin credenciales en laptops. | Ingeniera de plataforma | 2026-12-04 |
 | Definiremos un procedimiento de cambio urgente con revisor suplente cuando el líder técnico no esté disponible. | Líder técnico | 2026-11-20 |
@@ -105,16 +105,16 @@ No funcionó:
 
 ### Decisión 3 · La Function URL sin autenticación
 
-- Decisión:
-- Dato del repositorio que la sustenta:
-- Alternativa descartada y por qué:
-- Posición en minoría:
+- Decisión: Abrimos una excepción temporal para CKV_AWS_258 y mantenemos authorization_type = "NONE", porque la app móvil consume la Function URL directamente y no firma peticiones con IAM. La excepción queda escrita en infra/lambda.tf con #checkov:skip=CKV_AWS_258 y sus cuatro datos. Responsable: Líder técnico. Vencimiento: 2026-12-12. Control compensatorio: limitamos la Lambda a 10 ejecuciones simultáneas (reserved_concurrent_executions = 10 en aws_lambda_function.api) para acotar el abuso mientras dura la excepción. Riesgo aceptado: cualquiera con la URL puede invocar la API sin autenticarse, incluido POST /transferir. Además, CKV_AWS_258 se agrega a hard-fail-on en .checkov.yaml: una Function URL nueva sin autenticación y sin excepción bloquea el pipeline.
+- Dato del repositorio que la sustenta: CKV_AWS_258 sobre el recurso aws_lambda_function_url.api, en infra/lambda.tf líneas 31-40 (authorization_type = "NONE").
+- Alternativa descartada y por qué: Corregir con authorization_type = "AWS_IAM". Se descartó porque deja sin servicio a la app móvil hasta que firme las peticiones, y ese cambio está fuera de este repositorio.
+- Posición en minoría: El abogado del diablo propuso corregir ya, porque src/handler.js no valida ningún token y POST /transferir queda abierto a cualquiera, lo que es más grave que el bucket. Se aceptó como riesgo con una fecha de vencimiento corta y un límite de concurrencia.
 
 ## A3 · Dato nuevo
 
-- Qué cambia en el postmortem:
-- Qué cambia en las decisiones:
-- Respuesta del equipo al pedido recibido:
+- Qué cambia en el postmortem: Al impacto se suma una penalidad de S/ 15 000 por cada día sin acceso del proveedor, desde el 09/11. Nueva causa: la presión del contrato apuró el cambio y no había un proceso de cambio urgente con revisión.
+- Qué cambia en las decisiones: El acceso del proveedor se devuelve hoy dándole permiso solo al rol `conciliacion-lectura` de la cuenta 111122223333, sin reabrir el bucket al público. La Decisión 1 se mantiene: un bucket público sigue bloqueando el pipeline.
+- Respuesta del equipo al pedido recibido: No damos nombres. El cambio salió sin revisión porque `main` no tiene branch protection, el pipeline no revisa `infra/` y la única persona que sabe Terraform estaba de vacaciones. Sancionar a alguien no arregla eso. A cambio entregamos hoy el acceso del proveedor y las acciones con responsable y fecha.
 
 ## Parte B · Evidencia
 
@@ -127,3 +127,5 @@ No funcionó:
 ## Declaración de uso de IA
 
 Herramientas usadas y para qué se usó cada una:
+
+- Claude (Anthropic): leer el enunciado, ejecutar Checkov y `npm audit` en local para obtener los datos del repositorio, identificar las dependencias vulnerables, proponer el reemplazo de `ip` por `net.BlockList` con sus pruebas, y redactar borradores de las secciones de `DECISIONES.md` y de los jobs `iac` y `sca`. El equipo revisó, discutió y ajustó cada decisión antes de registrarla.
