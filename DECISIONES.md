@@ -91,17 +91,19 @@ No funcionó:
 
 ### Decisión 1 · Qué bloquea y qué informa
 
-- Decisión:
-- Dato del repositorio que la sustenta:
-- Alternativa descartada y por qué:
-- Posición en minoría:
+- Decisión: Checkov bloquea solo los hallazgos que dejan datos expuestos a Internet: `CKV_AWS_53`, `CKV_AWS_54`, `CKV_AWS_55`, `CKV_AWS_56`, `CKV_AWS_70`, `CKV2_AWS_6` y `CKV_AWS_258`. El resto informa. Trivy bloquea las vulnerabilidades HIGH y CRITICAL que ya tienen versión corregida (`ignore-unfixed`) e informa todas las demás.
+- Dato del repositorio que la sustenta: Checkov sobre `infra/` reporta 28 hallazgos, de los cuales 7 son los IDs que bloquean y 21 informan. Trivy sobre `package-lock.json` reporta 2 hallazgos HIGH que bloquean, ambos en `lodash` 4.17.20: CVE-2021-23337 (corregida en 4.17.21) y CVE-2026-4800 (corregida en 4.18.0).
+- Alternativa descartada y por qué: Bloquear los 28 hallazgos de Checkov. Se descartó porque 21 son endurecimientos (KMS, VPC, DLQ, X-Ray, replicación) que no causaron el incidente, y con el pipeline siempre en rojo el equipo terminaría ignorándolo.
+- Posición en minoría: El abogado del diablo propuso bloquear también `CKV_AWS_355` y `CKV_AWS_288`, porque el rol de la Lambda tiene `s3:*` sobre `Resource "*"` y podría leer cualquier bucket. Se descartó por ahora porque corregirlo exige rediseñar el IAM y no estaba en el origen del incidente.
 
 ### Decisión 2 · La vulnerabilidad sin versión corregida
 
-- Decisión:
-- Dato del repositorio que la sustenta:
-- Alternativa descartada y por qué:
-- Posición en minoría:
+- Decisión: Reemplazar la librería `ip` por `net.BlockList`, que viene con Node.
+- Dato del repositorio que la sustenta: CVE-2024-29415, `ip` 2.0.1 (no tiene versión corregida). Se usa en `src/notificaciones.js`, función `validarUrlNotificacion()`. Con esa librería se aceptaban URLs internas como `https://[::ffff:127.0.0.1]/`.
+- Alternativa descartada y por qué: La excepción, porque el fallo sí se podía explotar en nuestro código. Bloquear tampoco sirve, porque el fix podría no salir nunca.
+- Posición en minoría: El abogado del diablo propuso una excepción corta para no tocar código justo después del incidente. Se descartó porque el cambio es pequeño y tiene pruebas.
+
+- Claude Code: identificar las dependencias vulnerables, implementar el reemplazo de `ip` con sus pruebas y redactar la Decisión 2. El equipo lo revisó.
 
 ### Decisión 3 · La Function URL sin autenticación
 
